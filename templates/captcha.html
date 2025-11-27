@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reactor Stabilization</title>
+    <style>
+      body {
+        font-family: "Courier New", monospace;
+        background: #1a1a2e;
+        color: #00ffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+      h1 {
+        margin-bottom: 20px;
+        text-shadow: 0 0 10px #00ffff;
+      }
+      #gameCanvas {
+        border: 2px solid #00ffff;
+        background: #000;
+        cursor: crosshair;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+      }
+      .dashboard {
+        margin-top: 15px;
+        font-size: 20px;
+        display: flex;
+        gap: 30px;
+      }
+      .status-value {
+        font-weight: bold;
+        color: #fff;
+      }
+      #status {
+        margin: 15px;
+        padding: 10px;
+        font-weight: bold;
+      }
+      #status.success {
+        color: #00ff41;
+      }
+      #status.failed {
+        color: #ff3333;
+      }
+      button {
+        margin-top: 20px;
+        padding: 10px 30px;
+        background: #00ffff;
+        font-weight: bold;
+        cursor: pointer;
+        display: none;
+      }
+      button.visible {
+        display: inline-block;
+      }
+      #resultOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: none;
+        justify-content: center;
+        align-items: center;
+      }
+      .result-box {
+        border: 2px solid #00ffff;
+        padding: 40px;
+        background: #111;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>⚛ REACTOR STABILIZATION</h1>
+    <div id="status">INITIALIZING...</div>
+
+    <div style="position: relative">
+      <div
+        id="clickPrompt"
+        style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          pointer-events: none;
+          color: #00ffff;
+          background: rgba(0, 0, 0, 0.8);
+          padding: 10px;
+          border: 1px solid #00ffff;
+        "
+      >
+        CLICK TO ENGAGE
+      </div>
+      <canvas id="gameCanvas" width="600" height="400"></canvas>
+    </div>
+
+    <div class="dashboard">
+      <div>TIME: <span id="timeDisplay" class="status-value">0.0s</span></div>
+      <div>ANGLE: <span id="angleDisplay" class="status-value">0.0°</span></div>
+    </div>
+
+    <button id="verifyBtn">VERIFY COMPLETION</button>
+    <button id="retryBtn" onclick="location.reload()">RETRY</button>
+
+    <div id="resultOverlay">
+      <div class="result-box">
+        <h2 id="resultTitle"></h2>
+        <div id="resultStats"></div>
+        <button class="visible" onclick="location.reload()">
+          RESET SYSTEM
+        </button>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='stabilizer.js') }}"></script>
+
+    <script>
+      // Auth Check
+      if (!sessionStorage.getItem("reactor_logged_in"))
+        window.location.href = "/";
+
+      window.showResult = function (verified, message, stats) {
+        document.getElementById("resultOverlay").style.display = "flex";
+        const title = document.getElementById("resultTitle");
+        title.textContent = verified ? "✓ VERIFIED" : "✗ FAILED";
+        title.style.color = verified ? "#00ff41" : "#ff3333";
+        if (stats) {
+          document.getElementById("resultStats").innerHTML = `<br>Stability: ${
+            stats.stability_score
+          }%<br>Max Deviation: ${stats.max_deviation.toFixed(1)}°`;
+        } else {
+          document.getElementById("resultStats").innerText = message;
+        }
+      };
+    </script>
+  </body>
+</html>
